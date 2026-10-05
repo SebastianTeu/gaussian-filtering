@@ -92,7 +92,7 @@
            width="2100" height="1044" style="width: 100%; height: auto;">
       <p class="figure-caption has-text-centered">
         CreepyAttic rendered from an out-of-distribution camera pose, before (left) and after (right) filtering.
-        276,067 of 4,139,537 Gaussians were removed. (Thesis Fig. 6.1)
+        276,067 of 4,139,537 Gaussians were removed.
       </p>
     </div>
   </div>
@@ -151,7 +151,7 @@
           <img src="./static/images/noisy_ood_render.png"
                alt="Noisy 3D Gaussian Splatting render of an indoor scene from an out-of-distribution pose"
                width="2000" height="1307" loading="lazy">
-          <figcaption class="figure-caption has-text-centered">Noisy render from an indoor scene. (Thesis Fig. 3.5)</figcaption>
+          <figcaption class="figure-caption has-text-centered">Noisy render from an indoor scene.</figcaption>
         </figure>
       </div>
     </div>
@@ -218,7 +218,7 @@
           <img src="./static/images/camera_sampling.png"
                alt="Cameras sampled on slices of a PCA-aligned ellipsoid, each pointing toward the scene center"
                width="1282" height="955" loading="lazy" style="max-width: 560px;">
-          <figcaption class="figure-caption">Example of camera sampling using 3 slices and 5 cameras per slice. (Thesis Fig. 4.1)</figcaption>
+          <figcaption class="figure-caption">Example of camera sampling using 3 slices and 5 cameras per slice.</figcaption>
         </figure>
       </div>
     </div>
@@ -270,14 +270,14 @@
           </table>
         </div>
         <p class="figure-caption has-text-centered">
-          Performance of unfiltered and filtered scenes (Thesis Table 6.1). CreepyAttic, DrJohnson, and Playroom are from
+          Performance of unfiltered and filtered scenes. CreepyAttic, DrJohnson, and Playroom are from
           Deep Blending; &dagger;Bedroom is a custom-captured scene (iPhone 13 Pro Max, images downscaled 4&times;).
         </p>
 
         <div class="content has-text-justified" style="margin-top: 1.5rem;">
           <p>
-            All three quality metrics improve on every scene after filtering, and the filter itself took under two minutes
-            per scene (52.684&ndash;105.292&nbsp;s in Table 6.1), including CreepyAttic with 4,139,537 Gaussians.
+            All three quality metrics improve on every scene after filtering, and the filter took under two minutes
+            per scene, including CreepyAttic with over 4 million Gaussians.
             Rendering speed is comparable before and after filtering: FPS changed by &minus;10% to +3% across scenes
             (CreepyAttic 58.83&nbsp;&rarr;&nbsp;60.46, DrJohnson 69.48&nbsp;&rarr;&nbsp;62.55,
             Playroom 87.83&nbsp;&rarr;&nbsp;89.34, Bedroom 263.61&nbsp;&rarr;&nbsp;262.74), and the filter adds no
@@ -289,17 +289,17 @@
         <figure class="section-figure">
           <img src="./static/images/drjohnson_before_after.png"
                alt="DrJohnson before and after filtering" width="2115" height="1051" loading="lazy">
-          <figcaption class="figure-caption has-text-centered">DrJohnson before (left) and after (right) filtering. 191,626 of 3,775,155 Gaussians were removed. (Thesis Fig. 6.2)</figcaption>
+          <figcaption class="figure-caption has-text-centered">DrJohnson before (left) and after (right) filtering. 191,626 of 3,775,155 Gaussians were removed.</figcaption>
         </figure>
         <figure class="section-figure">
           <img src="./static/images/playroom_before_after.png"
                alt="Playroom before and after filtering" width="2118" height="1053" loading="lazy">
-          <figcaption class="figure-caption has-text-centered">Playroom before (left) and after (right) filtering. 179,399 of 2,787,141 Gaussians were removed. (Thesis Fig. 6.3)</figcaption>
+          <figcaption class="figure-caption has-text-centered">Playroom before (left) and after (right) filtering. 179,399 of 2,787,141 Gaussians were removed.</figcaption>
         </figure>
         <figure class="section-figure">
           <img src="./static/images/bedroom_before_after.png"
                alt="Custom-captured Bedroom scene before and after filtering" width="2124" height="1056" loading="lazy">
-          <figcaption class="figure-caption has-text-centered">Bedroom (custom capture) before (left) and after (right) filtering. 139,486 of 799,249 Gaussians were removed. (Thesis Fig. 6.4)</figcaption>
+          <figcaption class="figure-caption has-text-centered">Bedroom (custom capture) before (left) and after (right) filtering. 139,486 of 799,249 Gaussians were removed.</figcaption>
         </figure>
 
         <h3 class="title is-4">Run-Time Scaling</h3>
@@ -313,7 +313,7 @@
           <img src="./static/images/runtime_vs_gaussians.png"
                alt="Plot of filter run-time versus percentage of original Gaussians, showing a linear trend"
                width="2100" height="1341" loading="lazy" style="max-width: 640px;">
-          <figcaption class="figure-caption">Run-time of the filter on CreepyAttic with varying numbers of Gaussians. (Thesis Fig. 6.5)</figcaption>
+          <figcaption class="figure-caption">Run-time of the filter on CreepyAttic with varying numbers of Gaussians.</figcaption>
         </figure>
 
         <h3 class="title is-4">Ablation</h3>
@@ -323,8 +323,8 @@
             (<em>n</em><sub>x</sub>&nbsp;=&nbsp;<em>n</em><sub>y</sub>&nbsp;=&nbsp;100, percentile 0.9 fixed). The number of
             sampled cameras had the largest effect on both pruning rate and run-time. The thresholds had a smaller effect.
             More aggressive pruning is not necessarily better, because the high-pruning runs also removed Gaussians that
-            meaningfully contributed to the scene. Run 1 (the defaults) balances accurate pruning and speed.
-            Timings below are from the ablation runs (Table 6.2) and were measured separately from Table 6.1.
+            meaningfully contributed to the scene. The parameters of Run 1 were selected as the defaults, as they achieve
+            a balance between accurate pruning and filtering speed.
           </p>
         </div>
         <div class="table-container">
@@ -345,7 +345,7 @@
           </table>
         </div>
         <p class="figure-caption has-text-centered">
-          Selected ablation runs on CreepyAttic (Thesis Table 6.2). All 16 runs are in Appendix Table A.1 of the thesis.
+          Selected ablation runs on CreepyAttic. All 16 runs are in Appendix Table A.1 of the thesis.
         </p>
       </div>
     </div>
