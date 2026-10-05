@@ -1,126 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="description"
-        content="Deformable Neural Radiance Fields creates free-viewpoint portraits (nerfies) from casually captured videos.">
-  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nerfies: Deformable Neural Radiance Fields</title>
+  <title>Pre-Render Filtering of Unstable Gaussians for Improved Extreme View Synthesis in 3D Gaussian Splatting</title>
+  <meta name="description"
+        content="An offline, pre-render filter inspired by EV3DGS that prunes unstable Gaussians to improve 3D Gaussian Splatting renders from out-of-distribution camera poses while keeping real-time performance. Honors thesis by Sebastian Teuttli, Arizona State University.">
+  <meta name="keywords" content="3D Gaussian Splatting, 3DGS, gsplat, novel view synthesis, extreme view synthesis, out-of-distribution, Gaussian pruning, EV3DGS">
+  <meta name="author" content="Sebastian Teuttli">
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-PYVRSFMDRL');
-  </script>
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sebastianteu.github.io/gaussian-filtering/">
+  <meta property="og:title" content="Pre-Render Filtering of Unstable Gaussians for Improved Extreme View Synthesis in 3D Gaussian Splatting">
+  <meta property="og:description" content="Offline pruning of unstable Gaussians for cleaner 3DGS renders from out-of-distribution camera poses, without slowing down the renderer.">
+  <meta property="og:image" content="https://sebastianteu.github.io/gaussian-filtering/static/images/creepyattic_before_after.png">
+  <meta property="og:image:width" content="2100">
+  <meta property="og:image:height" content="1044">
+  <meta property="og:image:alt" content="CreepyAttic scene rendered from an out-of-distribution pose before and after filtering">
+  <meta name="twitter:card" content="summary_large_image">
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
         rel="stylesheet">
 
   <link rel="stylesheet" href="./static/css/bulma.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
   <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
   <link rel="icon" href="./static/images/favicon.svg">
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script defer src="./static/js/fontawesome.all.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
+
+  <style>
+    .figure-caption { font-size: 0.95rem; color: #4a4a4a; margin-top: 0.5rem; }
+    .results-table { margin: 0 auto; }
+    .results-table th, .results-table td { text-align: center !important; vertical-align: middle !important; white-space: nowrap; }
+    .results-table td:first-child, .results-table th:first-child { text-align: left !important; }
+    .section-figure { margin: 1.5rem 0; }
+    .section-figure img { width: 100%; height: auto; }
+    .advisor { font-size: 1.05rem; color: #4a4a4a; margin-top: 0.25rem; }
+  </style>
 </head>
 <body>
-
-<nav class="navbar" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </a>
-  </div>
-  <div class="navbar-menu">
-    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
-      <a class="navbar-item" href="https://keunhong.com">
-      <span class="icon">
-          <i class="fas fa-home"></i>
-      </span>
-      </a>
-
-      <div class="navbar-item has-dropdown is-hoverable">
-        <a class="navbar-link">
-          More Research
-        </a>
-        <div class="navbar-dropdown">
-          <a class="navbar-item" href="https://hypernerf.github.io">
-            HyperNeRF
-          </a>
-          <a class="navbar-item" href="https://nerfies.github.io">
-            Nerfies
-          </a>
-          <a class="navbar-item" href="https://latentfusion.github.io">
-            LatentFusion
-          </a>
-          <a class="navbar-item" href="https://photoshape.github.io">
-            PhotoShape
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</nav>
-
 
 <section class="hero">
   <div class="hero-body">
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">Nerfies: Deformable Neural Radiance Fields</h1>
+          <h1 class="title is-2 publication-title">Pre-Render Filtering of Unstable Gaussians for Improved Extreme View Synthesis in 3D Gaussian Splatting</h1>
           <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="https://keunhong.com">Keunhong Park</a><sup>1</sup>,</span>
-            <span class="author-block">
-              <a href="https://utkarshsinha.com">Utkarsh Sinha</a><sup>2</sup>,</span>
-            <span class="author-block">
-              <a href="https://jonbarron.info">Jonathan T. Barron</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="http://sofienbouaziz.com">Sofien Bouaziz</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://www.danbgoldman.com">Dan B Goldman</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://homes.cs.washington.edu/~seitz/">Steven M. Seitz</a><sup>1,2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="http://www.ricardomartinbrualla.com">Ricardo Martin-Brualla</a><sup>2</sup>
-            </span>
+            <span class="author-block">Sebastian Teuttli</span>
           </div>
+          <div class="advisor">Advised by Dr. Heni Ben Amor</div>
 
           <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>1</sup>University of Washington,</span>
-            <span class="author-block"><sup>2</sup>Google Research</span>
+            <span class="author-block">Honors Thesis, Barrett, The Honors College at Arizona State University, 2026</span>
           </div>
 
           <div class="column has-text-centered">
             <div class="publication-links">
-              <!-- PDF Link. -->
               <span class="link-block">
-                <a href="https://arxiv.org/pdf/2011.12948"
+                <a href="./static/thesis.pdf"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fas fa-file-pdf"></i>
@@ -129,45 +68,15 @@
                 </a>
               </span>
               <span class="link-block">
-                <a href="https://arxiv.org/abs/2011.12948"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
-              <!-- Video Link. -->
-              <span class="link-block">
-                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-youtube"></i>
-                  </span>
-                  <span>Video</span>
-                </a>
-              </span>
-              <!-- Code Link. -->
-              <span class="link-block">
-                <a href="https://github.com/google/nerfies"
+                <a href="https://github.com/SebastianTeu/gsplat-ood-filter"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fab fa-github"></i>
                   </span>
                   <span>Code</span>
-                  </a>
+                </a>
               </span>
-              <!-- Dataset Link. -->
-              <span class="link-block">
-                <a href="https://github.com/google/nerfies/releases/tag/0.1"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="far fa-images"></i>
-                  </span>
-                  <span>Data</span>
-                  </a>
             </div>
-
           </div>
         </div>
       </div>
@@ -178,73 +87,13 @@
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
-      <video id="teaser" autoplay muted loop playsinline height="100%">
-        <source src="./static/videos/teaser.mp4"
-                type="video/mp4">
-      </video>
-      <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Nerfies</span> turns selfie videos from your phone into
-        free-viewpoint
-        portraits.
-      </h2>
-    </div>
-  </div>
-</section>
-
-
-<section class="hero is-light is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-steve">
-          <video poster="" id="steve" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/steve.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-chair-tp">
-          <video poster="" id="chair-tp" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/chair-tp.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-shiba">
-          <video poster="" id="shiba" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/shiba.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-fullbody">
-          <video poster="" id="fullbody" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/fullbody.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-blueshirt">
-          <video poster="" id="blueshirt" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/blueshirt.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-mask">
-          <video poster="" id="mask" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/mask.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-coffee">
-          <video poster="" id="coffee" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/coffee.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-toby">
-          <video poster="" id="toby" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/toby2.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-      </div>
+      <img src="./static/images/creepyattic_before_after.png"
+           alt="CreepyAttic rendered from an out-of-distribution pose: noisy floaters before filtering (left), clean geometry after filtering (right)"
+           width="2100" height="1044" style="width: 100%; height: auto;">
+      <p class="figure-caption has-text-centered">
+        CreepyAttic rendered from an out-of-distribution camera pose, before (left) and after (right) filtering.
+        276,067 of 4,139,537 Gaussians were removed. (Thesis Fig. 6.1)
+      </p>
     </div>
   </div>
 </section>
@@ -258,48 +107,27 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            We present the first method capable of photorealistically reconstructing a non-rigidly
-            deforming scene using photos/videos captured casually from mobile phones.
+            3D Gaussian Splatting has become a popular method of achieving photo-realistic
+            renders from novel viewpoints while maintaining real-time rendering speeds. Despite
+            its efficiency, 3D Gaussian Splatting struggles with rendering out-of-distribution camera
+            poses, which often results in noisy renders.
           </p>
           <p>
-            Our approach augments neural radiance fields
-            (NeRF) by optimizing an
-            additional continuous volumetric deformation field that warps each observed point into a
-            canonical 5D NeRF.
-            We observe that these NeRF-like deformation fields are prone to local minima, and
-            propose a coarse-to-fine optimization method for coordinate-based models that allows for
-            more robust optimization.
-            By adapting principles from geometry processing and physical simulation to NeRF-like
-            models, we propose an elastic regularization of the deformation field that further
-            improves robustness.
+            This thesis addresses this limitation by introducing an offline preprocessing stage,
+            inspired by EV3DGS. This method evaluates Gaussian stability, implemented as a
+            custom CUDA kernel within the Gsplat framework, across many sampled camera
+            positions. Cameras are sampled from a PCA-aligned ellipsoid fitted to the scene,
+            ensuring robust coverage.
           </p>
           <p>
-            We show that <span class="dnerf">Nerfies</span> can turn casually captured selfie
-            photos/videos into deformable NeRF
-            models that allow for photorealistic renderings of the subject from arbitrary
-            viewpoints, which we dub <i>"nerfies"</i>. We evaluate our method by collecting data
-            using a
-            rig with two mobile phones that take time-synchronized photos, yielding train/validation
-            images of the same pose at different viewpoints. We show that our method faithfully
-            reconstructs non-rigidly deforming scenes and reproduces unseen views with high
-            fidelity.
+            Through pruning Gaussians prior to rendering, the method improves the stability
+            of renders from out-of-distribution views, while preserving the real-time performance
+            advantages of 3D Gaussian Splatting.
           </p>
         </div>
       </div>
     </div>
     <!--/ Abstract. -->
-
-    <!-- Paper video. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Video</h2>
-        <div class="publication-video">
-          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
-                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
-    <!--/ Paper video. -->
   </div>
 </section>
 
@@ -307,135 +135,238 @@
 <section class="section">
   <div class="container is-max-desktop">
 
-    <div class="columns is-centered">
-
-      <!-- Visual Effects. -->
-      <div class="column">
-        <div class="content">
-          <h2 class="title is-3">Visual Effects</h2>
-          <p>
-            Using <i>nerfies</i> you can create fun visual effects. This Dolly zoom effect
-            would be impossible without nerfies since it would require going through a wall.
-          </p>
-          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/dollyzoom-stacked.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-      </div>
-      <!--/ Visual Effects. -->
-
-      <!-- Matting. -->
-      <div class="column">
-        <h2 class="title is-3">Matting</h2>
-        <div class="columns is-centered">
-          <div class="column content">
-            <p>
-              As a byproduct of our method, we can also solve the matting problem by ignoring
-              samples that fall outside of a bounding box during rendering.
-            </p>
-            <video id="matting-video" controls playsinline height="100%">
-              <source src="./static/videos/matting.mp4"
-                      type="video/mp4">
-            </video>
-          </div>
-
-        </div>
-      </div>
-    </div>
-    <!--/ Matting. -->
-
-    <!-- Animation. -->
+    <!-- Problem. -->
     <div class="columns is-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3">Animation</h2>
-
-        <!-- Interpolating. -->
-        <h3 class="title is-4">Interpolating states</h3>
+        <h2 class="title is-3">The Problem</h2>
         <div class="content has-text-justified">
           <p>
-            We can also animate the scene by interpolating the deformation latent codes of two input
-            frames. Use the slider here to linearly interpolate between the left frame and the right
-            frame.
+            3D Gaussian Splatting represents a scene with millions of 3D Gaussians optimized from a set of
+            training images. When the scene is rendered from a camera pose far outside the distribution of
+            training poses, Gaussians that were never constrained from that direction produce unstable,
+            noisy floaters that obscure the main geometry.
           </p>
         </div>
-        <div class="columns is-vcentered interpolation-panel">
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_start.jpg"
-                 class="interpolation-image"
-                 alt="Interpolate start reference image."/>
-            <p>Start Frame</p>
-          </div>
-          <div class="column interpolation-video-column">
-            <div id="interpolation-image-wrapper">
-              Loading...
-            </div>
-            <input class="slider is-fullwidth is-large is-info"
-                   id="interpolation-slider"
-                   step="1" min="0" max="100" value="0" type="range">
-          </div>
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_end.jpg"
-                 class="interpolation-image"
-                 alt="Interpolation end reference image."/>
-            <p class="is-bold">End Frame</p>
-          </div>
-        </div>
-        <br/>
-        <!--/ Interpolating. -->
-
-        <!-- Re-rendering. -->
-        <h3 class="title is-4">Re-rendering the input video</h3>
-        <div class="content has-text-justified">
-          <p>
-            Using <span class="dnerf">Nerfies</span>, you can re-render a video from a novel
-            viewpoint such as a stabilized camera by playing back the training deformations.
-          </p>
-        </div>
-        <div class="content has-text-centered">
-          <video id="replay-video"
-                 controls
-                 muted
-                 preload
-                 playsinline
-                 width="75%">
-            <source src="./static/videos/replay.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <!--/ Re-rendering. -->
-
+        <figure class="section-figure">
+          <img src="./static/images/noisy_ood_render.png"
+               alt="Noisy 3D Gaussian Splatting render of an indoor scene from an out-of-distribution pose"
+               width="2000" height="1307" loading="lazy">
+          <figcaption class="figure-caption has-text-centered">Noisy render from an indoor scene. (Thesis Fig. 3.5)</figcaption>
+        </figure>
       </div>
     </div>
-    <!--/ Animation. -->
+    <!--/ Problem. -->
 
-
-    <!-- Concurrent Work. -->
+    <!-- Method. -->
     <div class="columns is-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3">Related Links</h2>
-
+        <h2 class="title is-3">Method</h2>
         <div class="content has-text-justified">
           <p>
-            There's a lot of excellent work that was introduced around the same time as ours.
+            This work builds on
+            EV3DGS
+            (Bowness and Poullis, 2025, <em>Extreme Views: 3DGS Filter for Novel View Synthesis from
+            Out-of-Distribution Camera Poses</em>;
+            <a href="https://damian-bowness.github.io/EV3DGS">project page</a>,
+            <a href="https://arxiv.org/abs/2510.20027">arXiv</a>), which casts a ray per pixel, assigns each intersected
+            Gaussian a sensitivity score measuring how unstable it is under small spatial perturbations,
+            and skips Gaussians whose rejection ratio is too high. EV3DGS is very effective, but scoring
+            Gaussians every frame adds computational overhead that impairs real-time rendering.
+          </p>
+          <p>The contributions of this thesis are:</p>
+          <ul>
+            <li><strong>Offline pre-render pruning.</strong> Instability is evaluated once, before rendering,
+              and unstable Gaussians are removed from the saved scene, so no per-frame ray evaluation is needed
+              and the renderer is unchanged.</li>
+            <li><strong>PCA-aligned ellipsoidal camera sampling.</strong> Synthetic cameras are placed on
+              ellipsoids fitted to the scene with PCA, so coverage adapts to elongated or anisotropic scenes.</li>
+            <li><strong>A gsplat CUDA kernel.</strong> The EV3DGS-style sensitivity metric is implemented as a
+              CUDA kernel inside gsplat, with one thread per ray, keeping filtering practical for scenes
+              with millions of Gaussians.</li>
+            <li><strong>Hit depth in rotation-only space.</strong> The depth of peak contribution
+              <em>t</em><sub>min</sub> is computed in each Gaussian's rotation-aligned frame (without scale),
+              the same space the sensitivity metric is evaluated in. Computing it in a scale-aligned space
+              noticeably degraded results.</li>
+          </ul>
+
+          <h3 class="title is-4">Pipeline</h3>
+          <ol>
+            <li><strong>Fit an ellipsoid.</strong> The center is the mean of the Gaussian means, the axes come from
+              PCA (SVD) of the centered means, and each radius is a percentile (default 90th) of the means
+              projected onto that axis. Using a percentile rather than the farthest Gaussian makes the fit robust
+              to outliers.</li>
+            <li><strong>Sample cameras.</strong> The ellipsoid is scaled by one or more scalars <em>S</em>
+              (default {2.0, 4.0}), sliced into <em>L</em> slices along its minor axis (poles excluded), and
+              <em>C</em> cameras are placed evenly around each slice, all looking at the scene center.</li>
+            <li><strong>Cast rays and score.</strong> Each camera casts an <em>n</em><sub>x</sub>&nbsp;&times;&nbsp;<em>n</em><sub>y</sub>
+              grid of rays. For each ray, intersected Gaussians are collected and sorted by depth, then traversed
+              front to back while tracking transmittance <em>T</em> and an opacity-weighted ray centroid
+              <em>x&#772;</em>. A hit is marked unstable when
+              &#8214;&alpha;&middot;<em>T</em>&middot;(<em>x&#772;</em>&nbsp;&minus;&nbsp;<em>x</em><sub>g</sub>)&#8214;<sub>2</sub>
+              &gt; &tau;<sub>xg</sub>. Unstable hits do not update <em>T</em> or <em>x&#772;</em>, so they do not
+              hide the Gaussians behind them.</li>
+            <li><strong>Prune.</strong> After all cameras, each Gaussian's rejection ratio (unstable hits / total
+              hits) is compared with &tau;<sub>ratio</sub>; Gaussians above it are removed and a new checkpoint is
+              written.</li>
+          </ol>
+          <p>
+            The overall cost is O(|<em>S</em>|&nbsp;&times;&nbsp;<em>L</em>&nbsp;&times;&nbsp;<em>C</em>&nbsp;&times;&nbsp;<em>N</em>&nbsp;&times;&nbsp;<em>n</em><sub>x</sub>&nbsp;&times;&nbsp;<em>n</em><sub>y</sub>),
+            i.e. linear in the number of Gaussians <em>N</em> for fixed parameters.
+          </p>
+        </div>
+        <figure class="section-figure has-text-centered">
+          <img src="./static/images/camera_sampling.png"
+               alt="Cameras sampled on slices of a PCA-aligned ellipsoid, each pointing toward the scene center"
+               width="1282" height="955" loading="lazy" style="max-width: 560px;">
+          <figcaption class="figure-caption">Example of camera sampling using 3 slices and 5 cameras per slice. (Thesis Fig. 4.1)</figcaption>
+        </figure>
+      </div>
+    </div>
+    <!--/ Method. -->
+
+    <!-- Results. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Results</h2>
+        <div class="content has-text-justified">
+          <p>
+            Scenes were trained with gsplat's simple trainer (default strategy, 30,000 iterations) and filtered on an
+            NVIDIA RTX 5070. CreepyAttic, DrJohnson, and Playroom come from the
+            <a href="http://visual.cs.ucl.ac.uk/pubs/deepblending/">Deep Blending</a> dataset (Hedman et al., 2018)
+            and use full-resolution images. Bedroom is a custom-captured scene of a master bedroom, recorded on an
+            iPhone 13 Pro Max and trained on images downscaled by 4&times;.
+            All scenes were filtered with the same parameters:
+            &tau;<sub>xg</sub>&nbsp;=&nbsp;10<sup>&minus;4</sup>, &tau;<sub>ratio</sub>&nbsp;=&nbsp;0.25,
+            <em>n</em><sub>x</sub>&nbsp;=&nbsp;<em>n</em><sub>y</sub>&nbsp;=&nbsp;100, percentile&nbsp;90,
+            <em>S</em>&nbsp;=&nbsp;{2.0,&nbsp;4.0}, <em>L</em>&nbsp;=&nbsp;5, <em>C</em>&nbsp;=&nbsp;6.
           </p>
           <p>
-            <a href="https://arxiv.org/abs/2104.09125">Progressive Encoding for Neural Optimization</a> introduces an idea similar to our windowed position encoding for coarse-to-fine optimization.
+            Because the target views are out of distribution, there is no ground truth. Quality is therefore measured
+            with no-reference metrics: NIQE, BRISQUE, and PIQE (lower is better). The renders come from an orbit around
+            the scene center at 5&times; the 90th-percentile distance of the Gaussian means.
           </p>
+        </div>
+
+        <div class="table-container">
+          <table class="table is-bordered is-striped is-narrow is-hoverable results-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Scene</th>
+                <th colspan="4">No Filter</th>
+                <th colspan="4">Filter</th>
+                <th rowspan="2">Filter Time (s)</th>
+              </tr>
+              <tr>
+                <th>NIQE&darr;</th><th>BRISQUE&darr;</th><th>PIQE&darr;</th><th>FPS</th>
+                <th>NIQE&darr;</th><th>BRISQUE&darr;</th><th>PIQE&darr;</th><th>FPS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>CreepyAttic</td><td>6.07</td><td>64.03</td><td>55.79</td><td>58.83</td><td>3.82</td><td>30.95</td><td>42.19</td><td>60.46</td><td>105.292</td></tr>
+              <tr><td>DrJohnson</td><td>6.90</td><td>86.76</td><td>64.32</td><td>69.48</td><td>4.22</td><td>34.75</td><td>50.12</td><td>62.55</td><td>101.414</td></tr>
+              <tr><td>Playroom</td><td>7.98</td><td>80.80</td><td>70.15</td><td>87.83</td><td>4.57</td><td>42.76</td><td>50.60</td><td>89.34</td><td>92.065</td></tr>
+              <tr><td>Bedroom&dagger;</td><td>7.41</td><td>69.15</td><td>76.14</td><td>263.61</td><td>4.94</td><td>38.18</td><td>59.67</td><td>262.74</td><td>52.684</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="figure-caption has-text-centered">
+          Performance of unfiltered and filtered scenes (Thesis Table 6.1). CreepyAttic, DrJohnson, and Playroom are from
+          Deep Blending; &dagger;Bedroom is a custom-captured scene (iPhone 13 Pro Max, images downscaled 4&times;).
+        </p>
+
+        <div class="content has-text-justified" style="margin-top: 1.5rem;">
           <p>
-            <a href="https://www.albertpumarola.com/research/D-NeRF/index.html">D-NeRF</a> and <a href="https://gvv.mpi-inf.mpg.de/projects/nonrigid_nerf/">NR-NeRF</a>
-            both use deformation fields to model non-rigid scenes.
+            All three quality metrics improve on every scene after filtering, and the filter itself took under two minutes
+            per scene (52.684&ndash;105.292&nbsp;s in Table 6.1), including CreepyAttic with 4,139,537 Gaussians.
+            Rendering speed is comparable before and after filtering: FPS changed by &minus;10% to +3% across scenes
+            (CreepyAttic 58.83&nbsp;&rarr;&nbsp;60.46, DrJohnson 69.48&nbsp;&rarr;&nbsp;62.55,
+            Playroom 87.83&nbsp;&rarr;&nbsp;89.34, Bedroom 263.61&nbsp;&rarr;&nbsp;262.74), and the filter adds no
+            per-frame computation.
           </p>
+        </div>
+
+        <h3 class="title is-4">Before / After</h3>
+        <figure class="section-figure">
+          <img src="./static/images/drjohnson_before_after.png"
+               alt="DrJohnson before and after filtering" width="2115" height="1051" loading="lazy">
+          <figcaption class="figure-caption has-text-centered">DrJohnson before (left) and after (right) filtering. 191,626 of 3,775,155 Gaussians were removed. (Thesis Fig. 6.2)</figcaption>
+        </figure>
+        <figure class="section-figure">
+          <img src="./static/images/playroom_before_after.png"
+               alt="Playroom before and after filtering" width="2118" height="1053" loading="lazy">
+          <figcaption class="figure-caption has-text-centered">Playroom before (left) and after (right) filtering. 179,399 of 2,787,141 Gaussians were removed. (Thesis Fig. 6.3)</figcaption>
+        </figure>
+        <figure class="section-figure">
+          <img src="./static/images/bedroom_before_after.png"
+               alt="Custom-captured Bedroom scene before and after filtering" width="2124" height="1056" loading="lazy">
+          <figcaption class="figure-caption has-text-centered">Bedroom (custom capture) before (left) and after (right) filtering. 139,486 of 799,249 Gaussians were removed. (Thesis Fig. 6.4)</figcaption>
+        </figure>
+
+        <h3 class="title is-4">Run-Time Scaling</h3>
+        <div class="content has-text-justified">
           <p>
-            Some works model videos with a NeRF by directly modulating the density, such as <a href="https://video-nerf.github.io/">Video-NeRF</a>, <a href="https://www.cs.cornell.edu/~zl548/NSFF/">NSFF</a>, and <a href="https://neural-3d-video.github.io/">DyNeRF</a>
+            To check the linear complexity, subsets of CreepyAttic were created by randomly keeping 20%, 40%, 60%, and 80%
+            of its Gaussians and filtered with the same parameters. Run-time grows linearly with the number of Gaussians.
           </p>
+        </div>
+        <figure class="section-figure has-text-centered">
+          <img src="./static/images/runtime_vs_gaussians.png"
+               alt="Plot of filter run-time versus percentage of original Gaussians, showing a linear trend"
+               width="2100" height="1341" loading="lazy" style="max-width: 640px;">
+          <figcaption class="figure-caption">Run-time of the filter on CreepyAttic with varying numbers of Gaussians. (Thesis Fig. 6.5)</figcaption>
+        </figure>
+
+        <h3 class="title is-4">Ablation</h3>
+        <div class="content has-text-justified">
           <p>
-            There are probably many more by the time you are reading this. Check out <a href="https://dellaert.github.io/NeRF/">Frank Dellart's survey on recent NeRF papers</a>, and <a href="https://github.com/yenchenlin/awesome-NeRF">Yen-Chen Lin's curated list of NeRF papers</a>.
+            An ablation study on CreepyAttic varied the thresholds, ellipsoid scalars, and number of cameras
+            (<em>n</em><sub>x</sub>&nbsp;=&nbsp;<em>n</em><sub>y</sub>&nbsp;=&nbsp;100, percentile 0.9 fixed). The number of
+            sampled cameras had the largest effect on both pruning rate and run-time. The thresholds had a smaller effect.
+            More aggressive pruning is not necessarily better, because the high-pruning runs also removed Gaussians that
+            meaningfully contributed to the scene. Run 1 (the defaults) balances accurate pruning and speed.
+            Timings below are from the ablation runs (Table 6.2) and were measured separately from Table 6.1.
+          </p>
+        </div>
+        <div class="table-container">
+          <table class="table is-bordered is-striped is-narrow is-hoverable results-table">
+            <thead>
+              <tr>
+                <th>Run</th><th>&tau;<sub>xg</sub></th><th>&tau;<sub>ratio</sub></th><th>Ellipsoid Scalars</th>
+                <th>Slices &times; Cams</th><th>Pruned (%)</th><th>Time (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>10<sup>&minus;4</sup></td><td>0.25</td><td>[2.0, 4.0]</td><td>5&times;6</td><td>6.67</td><td>111.7</td></tr>
+              <tr><td>2</td><td>10<sup>&minus;4</sup></td><td>0.25</td><td>[2.0, 4.0]</td><td>8&times;10</td><td>7.39</td><td>282.0</td></tr>
+              <tr><td>3</td><td>10<sup>&minus;4</sup></td><td>0.25</td><td>[1.5, 3.0, 6.0]</td><td>5&times;6</td><td>7.59</td><td>160.6</td></tr>
+              <tr><td>4</td><td>10<sup>&minus;4</sup></td><td>0.25</td><td>[1.5, 3.0, 6.0]</td><td>8&times;10</td><td>8.17</td><td>406.2</td></tr>
+              <tr><td>5</td><td>10<sup>&minus;14</sup></td><td>0.25</td><td>[1.5, 3.0, 6.0]</td><td>8&times;10</td><td>8.86</td><td>395.2</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="figure-caption has-text-centered">
+          Selected ablation runs on CreepyAttic (Thesis Table 6.2). All 16 runs are in Appendix Table A.1 of the thesis.
+        </p>
+      </div>
+    </div>
+    <!--/ Results. -->
+
+    <!-- Limitations. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Limitations &amp; Future Work</h2>
+        <div class="content has-text-justified">
+          <p>
+            Pruning offline gives up the per-view adaptability of EV3DGS. A Gaussian flagged from one view may be stable from
+            another, so permanently removing it risks degrading in-distribution views. Speed is also limited by the lack of
+            per-view tiling in the ray–Gaussian intersection step. Future directions include tiling, combining an offline
+            global filter with a lightweight per-view filter, and storing instability data so the renderer can make more
+            informed per-view decisions.
           </p>
         </div>
       </div>
     </div>
-    <!--/ Concurrent Work. -->
+    <!--/ Limitations. -->
 
   </div>
 </section>
@@ -444,11 +375,11 @@
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-    <pre><code>@article{park2021nerfies,
-  author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},
-  title     = {Nerfies: Deformable Neural Radiance Fields},
-  journal   = {ICCV},
-  year      = {2021},
+    <pre><code>@misc{teuttli2026prerender,
+  title  = {Pre-Render Filtering of Unstable Gaussians for Improved Extreme View Synthesis in 3D Gaussian Splatting},
+  author = {Teuttli, Sebastian},
+  year   = {2026},
+  note   = {Honors Thesis, Barrett, The Honors College, Arizona State University}
 }</code></pre>
   </div>
 </section>
@@ -457,11 +388,10 @@
 <footer class="footer">
   <div class="container">
     <div class="content has-text-centered">
-      <a class="icon-link"
-         href="./static/videos/nerfies_paper.pdf">
+      <a class="icon-link" href="./static/thesis.pdf" aria-label="Thesis PDF">
         <i class="fas fa-file-pdf"></i>
       </a>
-      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+      <a class="icon-link" href="https://github.com/SebastianTeu/gsplat-ood-filter" aria-label="Code on GitHub">
         <i class="fab fa-github"></i>
       </a>
     </div>
@@ -474,11 +404,9 @@
             Commons Attribution-ShareAlike 4.0 International License</a>.
           </p>
           <p>
-            This means you are free to borrow the <a
-              href="https://github.com/nerfies/nerfies.github.io">source code</a> of this website,
-            we just ask that you link back to this page in the footer.
-            Please remember to remove the analytics code included in the header of the website which
-            you do not want on your website.
+            This website is built on the <a href="https://nerfies.github.io">Nerfies</a> project page template.
+            Thanks to its authors for making the <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a> available.
           </p>
         </div>
       </div>
